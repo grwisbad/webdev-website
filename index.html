@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scheduloop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Login modal -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <img src="logo.png" alt="Scheduloop Logo" class="login-logo">
+      <h2>Admin Login</h2>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button id="login-button">Login</button>
+      <p id="login-error" class="error-message"></p>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <img src="logo.png" alt="Scheduloop Logo" class="logo">
+    <span class="menu-toggle">☰ Menu</span>
+    <button id="logout-button" class="hidden">Logout</button>
+  </header>
+
+  <div class="container">
+    <!-- SIDEBAR NAVIGATION -->
+    <nav id="sidebar">
+      <ul>
+        <li data-page="dashboard" class="active">🏠 Dashboard</li>
+        <li data-page="employees">👥 Employees</li>
+        <li data-page="shifts">📅 Shifts</li>
+        <li data-page="availability">⏰ Availability</li>
+        <li data-page="settings">⚙️ Settings</li>
+      </ul>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="content">
+      <!-- Dashboard page (default) -->
+      <div id="dashboard-page" class="page active">
+        <!-- ALERT WIDGET -->
+        <div class="widget">
+          <h2>Upcoming Alerts</h2>
+          <p>No uncovered shifts. All good! 😊</p>
+        </div>
+
+        <!-- WEEKLY SCHEDULE WIDGET -->
+        <div class="widget">
+          <h2>This Week's Schedule</h2>
+          <div class="calendar">
+            <!-- Day labels -->
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
+            <div>Thu</div><div>Fri</div><div>Sat</div>
+            <!-- Example shift entries -->
+            <div></div>
+            <div>9 am: Alice</div>
+            <div>1 pm: Bob</div>
+            <div>5 pm: Carol</div>
+            <div></div>
+            <div>11 am: Dan</div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employees page -->
+      <div id="employees-page" class="page">
+        <h2>Employees</h2>
+        <button id="add-employee-btn">Add Employee</button>
+        <div id="employees-list"></div>
+      </div>
+
+      <!-- Shifts page -->
+      <div id="shifts-page" class="page">
+        <h2>Shifts</h2>
+        <div id="shifts-calendar"></div>
+      </div>
+
+      <!-- Availability page -->
+      <div id="availability-page" class="page">
+        <h2>Employee Availability</h2>
+        <div id="availability-grid"></div>
+      </div>
+
+      <!-- Settings page -->
+      <div id="settings-page" class="page">
+        <h2>Settings</h2>
+        <div class="setting-item">
+          <h3>Notification Settings</h3>
+          <label>
+            <input type="checkbox" id="email-notifications"> Email notifications
+          </label>
+        </div>
+        <div class="setting-item">
+          <h3>Display Settings</h3>
+          <label>
+            <input type="checkbox" id="dark-mode"> Dark mode
+          </label>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals for adding/editing -->
+  <div id="employee-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="employee-modal-title">Add Employee</h2>
+      <form id="employee-form">
+        <input type="hidden" id="employee-id">
+        <input type="text" id="employee-name" placeholder="Name" required>
+        <input type="email" id="employee-email" placeholder="Email" required>
+        <input type="tel" id="employee-phone" placeholder="Phone">
+        <h3>Availability</h3>
+        <div id="availability-form"></div>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="shift-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Assign Shift</h2>
+      <form id="shift-form">
+        <input type="hidden" id="shift-date">
+        <input type="time" id="shift-start" required>
+        <input type="time" id="shift-end" required>
+        <select id="shift-employee" required>
+          <option value="">Select Employee</option>
+        </select>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
