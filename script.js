@@ -241,13 +241,17 @@ function openEmployeeModal(mode, employeeId = null) {
   // Show modal
   modal.style.display = 'block';
   
+  // IMPORTANT: Remove existing event listeners to prevent duplication
+  const newForm = form.cloneNode(true);
+  form.parentNode.replaceChild(newForm, form);
+  
   // Close modal when clicking on X
   document.querySelector('#employee-modal .close').addEventListener('click', () => {
     modal.style.display = 'none';
   });
   
   // Form submit handler
-  form.addEventListener('submit', (e) => {
+  document.getElementById('employee-form').addEventListener('submit', (e) => {
     e.preventDefault();
     
     const data = getData();
@@ -261,7 +265,7 @@ function openEmployeeModal(mode, employeeId = null) {
       availability[day] = {};
       timeSlots.forEach(slot => {
         const checkbox = document.querySelector(`input[name="availability-${day}-${slot}"]`);
-        availability[day][slot] = checkbox.checked;
+        availability[day][slot] = checkbox ? checkbox.checked : false;
       });
     });
     
@@ -392,6 +396,7 @@ function openShiftModal(mode, shiftId = null, date = null) {
   const modal = document.getElementById('shift-modal');
   const form = document.getElementById('shift-form');
   const employeeSelect = document.getElementById('shift-employee');
+  const deleteBtn = document.getElementById('delete-shift-btn');
   const data = getData();
   
   // Clear previous form data
@@ -406,22 +411,40 @@ function openShiftModal(mode, shiftId = null, date = null) {
     employeeSelect.appendChild(option);
   });
   
-  // If editing, populate form with shift data
+  // Show/hide delete button based on mode
   if (mode === 'edit' && shiftId) {
+    deleteBtn.style.display = 'inline-block';
+    
     const shift = data.shifts.find(s => s.id === shiftId);
     
     if (shift) {
+      document.getElementById('shift-id').value = shift.id;
       document.getElementById('shift-date').value = shift.date;
       document.getElementById('shift-start').value = shift.start;
       document.getElementById('shift-end').value = shift.end;
       document.getElementById('shift-employee').value = shift.employeeId;
     }
   } else if (mode === 'add' && date) {
+    deleteBtn.style.display = 'none';
     document.getElementById('shift-date').value = date;
+    document.getElementById('shift-id').value = '';
   }
   
   // Show modal
   modal.style.display = 'block';
+  
+  // IMPORTANT: Remove existing event listeners to prevent duplication
+  const newForm = form.cloneNode(true);
+  form.parentNode.replaceChild(newForm, form);
+  
+  // Set up the delete shift button
+  document.getElementById('delete-shift-btn').addEventListener('click', () => {
+    const shiftId = parseInt(document.getElementById('shift-id').value);
+    if (shiftId) {
+      deleteShift(shiftId);
+      modal.style.display = 'none';
+    }
+  });
   
   // Close modal when clicking on X
   document.querySelector('#shift-modal .close').addEventListener('click', () => {
@@ -429,10 +452,11 @@ function openShiftModal(mode, shiftId = null, date = null) {
   });
   
   // Form submit handler
-  form.addEventListener('submit', (e) => {
+  document.getElementById('shift-form').addEventListener('submit', (e) => {
     e.preventDefault();
     
     const data = getData();
+    const shiftId = document.getElementById('shift-id').value;
     const date = document.getElementById('shift-date').value;
     const start = document.getElementById('shift-start').value;
     const end = document.getElementById('shift-end').value;
@@ -473,6 +497,19 @@ function openShiftModal(mode, shiftId = null, date = null) {
     // Close modal
     modal.style.display = 'none';
   });
+}
+
+function deleteShift(id) {
+  if (confirm('Are you sure you want to delete this shift?')) {
+    const data = getData();
+    
+    // Remove shift
+    data.shifts = data.shifts.filter(shift => shift.id !== id);
+    
+    // Save data and reload UI
+    saveData(data);
+    loadShiftsCalendar();
+  }
 }
 
 // AVAILABILITY FUNCTIONS

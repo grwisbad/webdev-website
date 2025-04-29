@@ -320,9 +320,13 @@ label {
 }
 
 .delete-btn {
-  background: #f8f8f8;
-  color: var(--error);
-  border: 1px solid var(--error);
+  background: white !important;
+  color: var(--error) !important;
+  border: 1px solid var(--error) !important;
+}
+
+.delete-btn:hover {
+  background: #ffebee !important;
 }
 
 /* Availability Grid */
@@ -467,6 +471,21 @@ label {
   margin: 0 auto 25px auto;
   display: block;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+}
+
+/* Form Buttons */
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-buttons button {
+  flex: 1;
+}
+
+#shift-id {
+  display: none;
 }
 
 /* Responsive Styles */
