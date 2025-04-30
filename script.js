@@ -499,6 +499,7 @@ function openShiftModal(mode, shiftId = null, date = null) {
   });
 }
 
+// Delete shift function
 function deleteShift(id) {
   if (confirm('Are you sure you want to delete this shift?')) {
     const data = getData();
