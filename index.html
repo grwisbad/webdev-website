@@ -35,6 +35,7 @@
         <li data-page="shifts">📅 Shifts</li>
         <li data-page="availability">⏰ Availability</li>
         <li data-page="settings">⚙️ Settings</li>
+        <li data-page="about">ℹ️ About</li>
       </ul>
     </nav>
 
@@ -44,25 +45,18 @@
       <div id="dashboard-page" class="page active">
         <!-- ALERT WIDGET -->
         <div class="widget">
-          <h2>Upcoming Alerts</h2>
-          <p>No uncovered shifts. All good! 😊</p>
+          <h2>Alerts</h2>
+          <p id="alerts-content">Loading alerts...</p>
         </div>
 
         <!-- WEEKLY SCHEDULE WIDGET -->
         <div class="widget">
           <h2>This Week's Schedule</h2>
-          <div class="calendar">
+          <div class="calendar" id="weekly-schedule-calendar">
             <!-- Day labels -->
             <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
             <div>Thu</div><div>Fri</div><div>Sat</div>
-            <!-- Example shift entries -->
-            <div></div>
-            <div>9 am: Alice</div>
-            <div>1 pm: Bob</div>
-            <div>5 pm: Carol</div>
-            <div></div>
-            <div>11 am: Dan</div>
-            <div></div>
+            <!-- Shift entries will be populated by JS -->
           </div>
         </div>
       </div>
@@ -76,8 +70,10 @@
 
       <!-- Shifts page -->
       <div id="shifts-page" class="page">
-        <h2>Shifts</h2>
-        <div id="shifts-calendar"></div>
+        <h2>Shifts - <span id="shifts-month-year">Current Month</span></h2>
+        <div id="shifts-calendar" class="monthly-calendar">
+          <!-- Calendar grid will be populated by JS -->
+        </div>
       </div>
 
       <!-- Availability page -->
@@ -102,6 +98,37 @@
           </label>
         </div>
       </div>
+
+      <!-- About page -->
+      <div id="about-page" class="page">
+        <h2>About Us</h2>
+        <p>
+          A simple, browser-based employee scheduling application with an intuitive interface. Chronexa helps managers organize employee shifts, track availability, and maintain a clear overview of the work schedule.
+          <br><br>
+          Feel free to reach out using the form below.
+        </p>
+
+        <h3>Contact Us</h3>
+        <form id="contact-form">
+          <div class="form-group">
+            <label for="contact-name">Name:</label>
+            <input type="text" id="contact-name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Email:</label>
+            <input type="email" id="contact-email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="contact-phone">Phone (Optional):</label>
+            <input type="tel" id="contact-phone" name="phone">
+          </div>
+          <div class="form-group">
+            <label for="contact-message">Message:</label>
+            <textarea id="contact-message" name="message" rows="5" required></textarea>
+          </div>
+          <button type="submit">Send Message</button>
+        </form>
+      </div>
     </main>
   </div>
 
@@ -125,18 +152,30 @@
   <div id="shift-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2>Assign Shift</h2>
+      <h2 id="shift-modal-title">Assign Shift</h2>
       <form id="shift-form">
         <input type="hidden" id="shift-id">
         <input type="hidden" id="shift-date">
-        <input type="time" id="shift-start" required>
-        <input type="time" id="shift-end" required>
-        <select id="shift-employee" required>
-          <option value="">Select Employee</option>
-        </select>
+
+        <div class="form-group">
+          <label for="shift-employee">Assign Employee:</label>
+          <select id="shift-employee" name="employeeId">
+            <option value="">-- Select Employee --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="shift-start-time">Start Time:</label>
+          <input type="time" id="shift-start-time" name="startTime" required>
+        </div>
+        <div class="form-group">
+          <label for="shift-end-time">End Time:</label>
+          <input type="time" id="shift-end-time" name="endTime" required>
+        </div>
+
         <div class="form-buttons">
-          <button type="submit">Save</button>
-          <button type="button" id="delete-shift-btn" class="delete-btn">Delete Shift</button>
+          <button type="submit">Save Shift</button>
+          <button type="button" id="delete-shift-btn" class="delete-btn hidden">Delete Shift</button>
         </div>
       </form>
     </div>

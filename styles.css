@@ -151,6 +151,127 @@ main {
   text-align: center;
 }
 
+/* Styles for Monthly Shifts Calendar */
+.monthly-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  border: 1px solid #ccc;
+  padding: 5px;
+  background-color: #f9f9f9;
+}
+
+.calendar-header {
+  font-weight: bold;
+  text-align: center;
+  padding: 5px 0;
+  background-color: #eee;
+  border-radius: 3px;
+}
+
+.calendar-day {
+  border: 1px solid #ddd;
+  min-height: 100px; /* Adjust as needed */
+  padding: 5px;
+  position: relative; /* For positioning add button */
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9em;
+}
+
+.calendar-day.empty {
+  background-color: transparent;
+  border: none;
+}
+
+.day-number {
+  font-weight: bold;
+  margin-bottom: 5px;
+  align-self: flex-start;
+}
+
+.shifts-in-day {
+  flex-grow: 1;
+  overflow-y: auto; /* Add scroll if too many shifts */
+  max-height: 70px; /* Limit height before scroll */
+}
+
+.shift-entry-monthly {
+  background-color: #e0f7fa;
+  border: 1px solid #b2ebf2;
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin-bottom: 3px;
+  font-size: 0.8em;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.shift-entry-monthly:hover {
+    background-color: #b2ebf2;
+}
+
+.add-shift-day-btn {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  line-height: 18px; /* Adjust for vertical centering */
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.3; /* Initially less visible */
+  transition: opacity 0.2s ease-in-out;
+}
+
+.calendar-day:hover .add-shift-day-btn {
+    opacity: 1; /* Show on hover */
+}
+
+.add-shift-day-btn:hover {
+  background-color: #45a049;
+}
+
+/* Styles for Weekly Schedule on Dashboard */
+#weekly-schedule-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+}
+
+#weekly-schedule-calendar > div { /* Style both headers and day cells */
+    border: 1px solid #eee;
+    padding: 8px 4px;
+    min-height: 60px; /* Ensure cells have some height */
+    font-size: 0.9em;
+}
+
+#weekly-schedule-calendar > div:nth-child(-n+7) { /* Header specific styles */
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.shift-entry { /* Style for individual shifts in weekly view */
+    background-color: #f1f8e9;
+    border: 1px solid #dcedc8;
+    border-radius: 3px;
+    padding: 2px;
+    margin-top: 3px;
+    font-size: 0.85em;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* Buttons */
 button {
   background: linear-gradient(to right, var(--primary), var(--secondary));
@@ -257,6 +378,42 @@ label {
   font-size: 0.9rem;
 }
 
+/* Form Group */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+.form-group textarea {
+  resize: vertical; /* Allow vertical resizing */
+}
+
+.form-group select,
+.form-group input[type="time"] {
+  width: 100%;
+  padding: 8px; /* Adjust padding to match other inputs */
+  border: 1px solid var(--border); /* Use theme border color */
+  border-radius: 4px; /* Match other inputs */
+  box-sizing: border-box;
+  font-size: 1rem; /* Match other inputs */
+}
+
 /* Page Transitions */
 .page {
   display: none;
@@ -273,7 +430,7 @@ label {
 }
 
 .hidden {
-  display: none;
+  display: none !important; /* Use important if necessary to override other display rules */
 }
 
 /* Employee Cards */
@@ -320,13 +477,13 @@ label {
 }
 
 .delete-btn {
-  background: white !important;
-  color: var(--error) !important;
-  border: 1px solid var(--error) !important;
+  background: var(--error) !important; /* Use !important if needed */
+  color: white !important;
+  border: none !important;
 }
 
 .delete-btn:hover {
-  background: #ffebee !important;
+  background: #d32f2f !important; /* Darker error color on hover */
 }
 
 /* Availability Grid */
@@ -475,13 +632,14 @@ label {
 
 /* Form Buttons */
 .form-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  display: flex; /* Arrange buttons side-by-side */
+  justify-content: space-between; /* Space out Save and Delete */
+  gap: 10px; /* Add space between buttons */
+  margin-top: 20px; /* Add space above buttons */
 }
 
 .form-buttons button {
-  flex: 1;
+  flex-grow: 1; /* Make buttons share space */
 }
 
 #shift-id {

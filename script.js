@@ -613,20 +613,379 @@ function loadSettings() {
 // Initialize app
 window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
-});
 
-// Close modals when clicking outside (but not the login modal if not logged in)
-window.addEventListener('click', (e) => {
-  const modals = document.querySelectorAll('.modal');
-  modals.forEach(modal => {
-    // Don't close login modal if not logged in
-    if (modal.id === 'login-modal' && !localStorage.getItem('isLoggedIn')) {
+  // --- DOM Elements (Consolidated) ---
+  const sidebarLinks = document.querySelectorAll('#sidebar li');
+  const pages = document.querySelectorAll('.page');
+  const contactForm = document.getElementById('contact-form');
+  const weeklyScheduleCalendar = document.getElementById('weekly-schedule-calendar');
+  const alertsContent = document.getElementById('alerts-content');
+  const shiftsCalendarContainer = document.getElementById('shifts-calendar');
+  const shiftsMonthYearSpan = document.getElementById('shifts-month-year');
+  const shiftModal = document.getElementById('shift-modal');
+  const shiftModalTitle = document.getElementById('shift-modal-title');
+  const shiftForm = document.getElementById('shift-form');
+  const shiftIdInput = document.getElementById('shift-id');
+  const shiftDateInput = document.getElementById('shift-date');
+  const shiftEmployeeSelect = document.getElementById('shift-employee');
+  const shiftStartTimeInput = document.getElementById('shift-start-time');
+  const shiftEndTimeInput = document.getElementById('shift-end-time');
+  const deleteShiftButton = document.getElementById('delete-shift-btn'); // Make sure this ID exists in HTML
+  const closeShiftModalButton = shiftModal ? shiftModal.querySelector('.close') : null;
+
+  // --- Utility Functions ---
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+  function getStartOfWeek(date) {
+    const dt = new Date(date);
+    const day = dt.getDay();
+    const diff = dt.getDate() - day;
+    return new Date(dt.setDate(diff));
+  }
+
+  // --- Page Switching Logic ---
+  function showPage(pageId) {
+    pages.forEach(page => page?.classList.remove('active'));
+    sidebarLinks.forEach(link => link?.classList.remove('active'));
+
+    const targetPage = document.getElementById(`${pageId}-page`);
+    if (targetPage) {
+        targetPage.classList.add('active');
+    } else {
+        console.error(`Page with ID ${pageId}-page not found.`);
+    }
+    const targetLink = document.querySelector(`#sidebar li[data-page="${pageId}"]`);
+     if (targetLink) {
+        targetLink.classList.add('active');
+    } else {
+         console.error(`Sidebar link with data-page="${pageId}" not found.`);
+     }
+
+     // Re-render relevant pages when shown (optional but can ensure freshness)
+     if (pageId === 'dashboard') {
+         renderDashboard();
+     } else if (pageId === 'shifts') {
+         const today = new Date(); // Or use state for current month
+         renderShiftsCalendar(today.getFullYear(), today.getMonth());
+     } else if (pageId === 'employees') {
+         loadEmployees(); // Assuming loadEmployees exists
+     } else if (pageId === 'availability') {
+         loadAvailability(); // Assuming loadAvailability exists
+     }
+  }
+
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        const pageId = link.getAttribute('data-page');
+        if (pageId) {
+            showPage(pageId);
+        } else {
+            console.error('Clicked sidebar link does not have a data-page attribute.');
+        }
+    });
+  });
+
+  // --- Contact Form Logic ---
+  if (contactForm) {
+    contactForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        console.log('Contact form submitted. Backend integration needed.');
+        const name = document.getElementById('contact-name').value;
+        const email = document.getElementById('contact-email').value;
+        const phone = document.getElementById('contact-phone').value;
+        const message = document.getElementById('contact-message').value;
+        console.log('Form Data:', { name, email, phone, message });
+        alert('Message sent (simulation)!');
+        contactForm.reset();
+    });
+  }
+
+  // --- Rendering Functions (Dashboard, Weekly, Alerts, Monthly Calendar) ---
+  function renderDashboard() {
+    console.log("Rendering Dashboard...");
+    const data = getData(); // Use getData()
+    const allShifts = data.shifts || [];
+    const allEmployees = data.employees || [];
+    const today = new Date();
+    renderWeeklySchedule(allShifts, allEmployees, today);
+    renderAlerts(allShifts, today);
+  }
+
+  function renderWeeklySchedule(shifts, employees, date) {
+    if (!weeklyScheduleCalendar) return;
+    const existingCells = weeklyScheduleCalendar.querySelectorAll('div:not(:nth-child(-n+7))');
+    existingCells.forEach(cell => cell.remove());
+    const startOfWeek = getStartOfWeek(date);
+    const employeeMap = new Map(employees.map(emp => [emp.id, emp.name]));
+    for (let i = 0; i < 7; i++) {
+        const currentDay = new Date(startOfWeek);
+        currentDay.setDate(startOfWeek.getDate() + i);
+        const formattedDate = formatDate(currentDay);
+        const dayCell = document.createElement('div');
+        dayCell.dataset.date = formattedDate;
+        const shiftsForDay = shifts.filter(shift => shift.date === formattedDate);
+        shiftsForDay.sort((a, b) => a.start.localeCompare(b.start));
+        shiftsForDay.forEach(shift => {
+            const shiftDiv = document.createElement('div');
+            shiftDiv.classList.add('shift-entry');
+            const employeeName = shift.employeeId ? employeeMap.get(shift.employeeId) || 'Unassigned' : 'Unassigned';
+            shiftDiv.textContent = `${shift.start}: ${employeeName}`;
+            dayCell.appendChild(shiftDiv);
+        });
+        if (shiftsForDay.length === 0) dayCell.innerHTML = '&nbsp;';
+        weeklyScheduleCalendar.appendChild(dayCell);
+    }
+  }
+
+  function renderAlerts(shifts, date) {
+     if (!alertsContent) return;
+     const todayStr = formatDate(date);
+     const nextWeek = new Date(date);
+     nextWeek.setDate(date.getDate() + 7);
+     const nextWeekStr = formatDate(nextWeek);
+     const upcomingUncoveredShifts = shifts.filter(shift =>
+         shift.date >= todayStr && shift.date < nextWeekStr && !shift.employeeId
+     );
+     if (upcomingUncoveredShifts.length > 0) {
+         alertsContent.textContent = `🚨 ${upcomingUncoveredShifts.length} uncovered shift(s) in the next 7 days!`;
+         alertsContent.style.color = 'red';
+     } else {
+         const anyShiftsExist = shifts.some(shift => shift.date >= todayStr && shift.date < nextWeekStr);
+         if (anyShiftsExist) {
+             alertsContent.textContent = "✅ All upcoming shifts covered.";
+             alertsContent.style.color = 'green';
+         } else {
+             alertsContent.textContent = "No upcoming shifts scheduled.";
+             alertsContent.style.color = 'inherit';
+         }
+     }
+  }
+
+  function renderShiftsCalendar(year, month) {
+    if (!shiftsCalendarContainer || !shiftsMonthYearSpan) return;
+    shiftsCalendarContainer.innerHTML = '';
+    const data = getData(); // Use getData()
+    const shifts = data.shifts || [];
+    const employees = data.employees || [];
+    const employeeMap = new Map(employees.map(emp => [emp.id, emp.name]));
+    const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+    shiftsMonthYearSpan.textContent = `${monthName} ${year}`;
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    const firstDayWeekday = firstDayOfMonth.getDay();
+    const totalDays = lastDayOfMonth.getDate();
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    daysOfWeek.forEach(day => { /* Add headers */
+        const headerCell = document.createElement('div');
+        headerCell.classList.add('calendar-header');
+        headerCell.textContent = day;
+        shiftsCalendarContainer.appendChild(headerCell);
+    });
+    for (let i = 0; i < firstDayWeekday; i++) { /* Add empty cells */
+        const emptyCell = document.createElement('div');
+        emptyCell.classList.add('calendar-day', 'empty');
+        shiftsCalendarContainer.appendChild(emptyCell);
+    }
+    for (let day = 1; day <= totalDays; day++) { /* Add day cells */
+        const dayCell = document.createElement('div');
+        dayCell.classList.add('calendar-day');
+        const currentDate = new Date(year, month, day);
+        const formattedDate = formatDate(currentDate);
+        dayCell.dataset.date = formattedDate;
+        const dayNumber = document.createElement('span');
+        dayNumber.classList.add('day-number');
+        dayNumber.textContent = day;
+        dayCell.appendChild(dayNumber);
+        const shiftsContainer = document.createElement('div');
+        shiftsContainer.classList.add('shifts-in-day');
+        const shiftsForDay = shifts.filter(shift => shift.date === formattedDate);
+        shiftsForDay.sort((a, b) => a.start.localeCompare(b.start));
+        shiftsForDay.forEach(shift => { /* Add shift entries */
+            const shiftDiv = document.createElement('div');
+            shiftDiv.classList.add('shift-entry-monthly');
+            const employeeName = shift.employeeId ? employeeMap.get(shift.employeeId) || 'Unassigned' : 'Unassigned';
+            shiftDiv.textContent = `${shift.start}-${shift.end}: ${employeeName}`;
+            shiftDiv.dataset.shiftId = shift.id;
+            shiftDiv.addEventListener('click', (e) => { // EDIT LISTENER
+                e.stopPropagation();
+                const shiftId = e.currentTarget.dataset.shiftId;
+                const date = e.currentTarget.closest('.calendar-day').dataset.date;
+                openShiftModal(shiftId, date); // Calls the function below
+            });
+            shiftsContainer.appendChild(shiftDiv);
+        });
+        dayCell.appendChild(shiftsContainer);
+        const addShiftBtn = document.createElement('button'); /* Add '+' button */
+        addShiftBtn.classList.add('add-shift-day-btn');
+        addShiftBtn.textContent = '+';
+        addShiftBtn.title = `Add shift for ${formattedDate}`;
+        addShiftBtn.addEventListener('click', (e) => { // ADD LISTENER
+            e.stopPropagation();
+            const date = e.currentTarget.closest('.calendar-day').dataset.date;
+            openShiftModal(null, date); // Calls the function below
+        });
+        dayCell.appendChild(addShiftBtn);
+        shiftsCalendarContainer.appendChild(dayCell);
+    }
+  }
+
+  // --- Shift Modal Functions (Corrected and Integrated) ---
+  function openShiftModal(shiftId = null, date) {
+    if (!shiftModal || !shiftForm) return;
+    shiftForm.reset();
+    shiftDateInput.value = date;
+    shiftIdInput.value = shiftId || '';
+
+    const data = getData(); // Use getData()
+    const employees = data.employees || [];
+    shiftEmployeeSelect.innerHTML = '<option value="">-- Unassigned --</option>';
+    employees.forEach(emp => {
+      const option = document.createElement('option');
+      option.value = emp.id; // ID is likely a number, value will be string
+      option.textContent = emp.name;
+      shiftEmployeeSelect.appendChild(option);
+    });
+
+    if (shiftId) {
+      shiftModalTitle.textContent = 'Edit Shift';
+      const shifts = data.shifts || []; // Use getData()
+      const shift = shifts.find(s => String(s.id) === String(shiftId)); // Compare as strings just in case
+      if (shift) {
+        shiftEmployeeSelect.value = shift.employeeId || '';
+        shiftStartTimeInput.value = shift.start;
+        shiftEndTimeInput.value = shift.end;
+        deleteShiftButton?.classList.remove('hidden');
+      } else {
+        console.error("Shift not found for editing:", shiftId);
+        closeShiftModal();
+        return;
+      }
+    } else {
+      shiftModalTitle.textContent = 'Add Shift';
+      deleteShiftButton?.classList.add('hidden');
+    }
+    shiftModal.style.display = 'block';
+  }
+
+  function closeShiftModal() {
+    if (shiftModal) {
+      shiftModal.style.display = 'none';
+    }
+  }
+
+  function handleShiftFormSubmit(event) {
+    event.preventDefault();
+    const data = getData(); // Get current data
+    const shifts = data.shifts || [];
+    const shiftId = shiftIdInput.value;
+
+    const employeeIdValue = shiftEmployeeSelect.value;
+    const employeeId = employeeIdValue ? parseInt(employeeIdValue, 10) : null;
+
+    const shiftData = {
+      id: shiftId || `shift_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+      date: shiftDateInput.value,
+      employeeId: employeeId,
+      start: shiftStartTimeInput.value,
+      end: shiftEndTimeInput.value,
+    };
+
+    if (!shiftData.date || !shiftData.start || !shiftData.end) {
+      alert("Please fill in date, start time, and end time.");
       return;
     }
-    
-    // Close other modals when clicking outside
-    if (e.target === modal) {
-      modal.style.display = 'none';
+
+    let updatedShifts;
+    if (shiftId) {
+      const index = shifts.findIndex(s => String(s.id) === String(shiftId));
+      if (index > -1) {
+        updatedShifts = [...shifts];
+        updatedShifts[index] = shiftData;
+      } else {
+        console.error("Shift to update not found:", shiftId);
+        updatedShifts = [...shifts, shiftData];
+      }
+    } else {
+      updatedShifts = [...shifts, shiftData];
     }
-  });
+
+    saveData({ ...data, shifts: updatedShifts });
+
+    const [year, month] = shiftData.date.split('-').map(Number);
+    renderShiftsCalendar(year, month - 1);
+    renderDashboard();
+
+    closeShiftModal();
+  }
+
+  function handleDeleteShift() {
+    const shiftId = shiftIdInput.value;
+    if (!shiftId) return;
+
+    if (confirm('Are you sure you want to delete this shift?')) {
+      const data = getData();
+      let shifts = data.shifts || [];
+      const initialLength = shifts.length;
+
+      const updatedShifts = shifts.filter(s => String(s.id) !== String(shiftId));
+
+      if (updatedShifts.length < initialLength) {
+        saveData({ ...data, shifts: updatedShifts });
+
+        const date = shiftDateInput.value;
+        const [year, month] = date.split('-').map(Number);
+        renderShiftsCalendar(year, month - 1);
+        renderDashboard();
+      } else {
+        console.error("Shift to delete not found:", shiftId);
+      }
+      closeShiftModal();
+    }
+  }
+
+  // --- Event Listeners for Shift Modal ---
+  if (shiftForm) {
+    shiftForm.addEventListener('submit', handleShiftFormSubmit);
+  }
+  if (deleteShiftButton) {
+    deleteShiftButton.addEventListener('click', handleDeleteShift);
+  }
+  if (closeShiftModalButton) {
+    closeShiftModalButton.addEventListener('click', closeShiftModal);
+  }
+  if (shiftModal) {
+    shiftModal.addEventListener('click', (event) => {
+      if (event.target === shiftModal) {
+        closeShiftModal();
+      }
+    });
+  }
+
+  // --- Initial App Load ---
+  function initializeApp() {
+    renderDashboard();
+    const today = new Date();
+    renderShiftsCalendar(today.getFullYear(), today.getMonth());
+    loadEmployees();
+    loadAvailability();
+    loadSettings();
+
+    const initialPage = document.querySelector('#sidebar li.active')?.getAttribute('data-page') || 'dashboard';
+    showPage(initialPage);
+  }
+
+  initializeApp();
+});
+
+window.addEventListener('click', (e) => {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (modal.id === 'login-modal' && !localStorage.getItem('isLoggedIn')) {
+            return;
+        }
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 });
