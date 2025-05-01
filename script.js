@@ -135,7 +135,6 @@ function loadData() {
   loadEmployees();
   loadShiftsCalendar();
   loadAvailability();
-  loadSettings();
 }
 
 // EMPLOYEE FUNCTIONS
@@ -515,98 +514,94 @@ function deleteShift(id) {
 
 // AVAILABILITY FUNCTIONS
 function loadAvailability() {
-  const grid = document.getElementById('availability-grid');
+  const availabilityTable = document.getElementById('availability-table');
+  const availabilityTbody = document.getElementById('availability-tbody');
+  const availabilityDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const availabilityTimeSlots = ['morning', 'afternoon', 'evening'];
+
+  if (!availabilityTable || !availabilityTbody) {
+    console.error("Availability table elements not found.");
+    return;
+  }
+
   const data = getData();
-  
-  // Clear grid
-  grid.innerHTML = '';
-  
-  // Create header row
-  const headerRow = document.createElement('div');
-  headerRow.className = 'availability-row';
-  
-  // Employee column header
-  const employeeHeader = document.createElement('div');
-  employeeHeader.className = 'availability-cell';
-  employeeHeader.textContent = 'Employee';
-  headerRow.appendChild(employeeHeader);
-  
-  // Day columns
-  const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  daysOfWeek.forEach(day => {
-    const dayHeader = document.createElement('div');
-    dayHeader.className = 'availability-cell';
-    dayHeader.textContent = day;
+  const employees = data.employees || [];
+
+  // Clear previous table content
+  availabilityTable.querySelector('thead').innerHTML = '';
+  availabilityTbody.innerHTML = '';
+
+  // Create Header Row
+  const headerRow = document.createElement('tr');
+  const nameHeader = document.createElement('th');
+  nameHeader.textContent = 'Employee';
+  headerRow.appendChild(nameHeader);
+
+  // Add day headers
+  availabilityDays.forEach(dayKey => {
+    const dayHeader = document.createElement('th');
+    dayHeader.textContent = dayKey.charAt(0).toUpperCase() + dayKey.slice(1);
     headerRow.appendChild(dayHeader);
   });
-  
-  grid.appendChild(headerRow);
-  
-  // Create a row for each employee
-  data.employees.forEach(employee => {
-    const row = document.createElement('div');
-    row.className = 'availability-row';
-    
-    // Employee name
-    const nameCell = document.createElement('div');
-    nameCell.className = 'availability-cell';
-    nameCell.textContent = employee.name;
-    row.appendChild(nameCell);
-    
-    // Days of the week
-    daysOfWeek.map(day => day.toLowerCase()).forEach(day => {
-      const dayCell = document.createElement('div');
-      dayCell.className = 'availability-cell';
-      
-      // Show availability as M/A/E (Morning/Afternoon/Evening)
-      const availability = employee.availability[day];
-      const availText = [];
-      
-      if (availability.morning) availText.push('M');
-      if (availability.afternoon) availText.push('A');
-      if (availability.evening) availText.push('E');
-      
-      dayCell.textContent = availText.length ? availText.join('/') : '-';
-      row.appendChild(dayCell);
-    });
-    
-    grid.appendChild(row);
-  });
-}
 
-// SETTINGS FUNCTIONS
-function loadSettings() {
-  const data = getData();
-  const emailNotif = document.getElementById('email-notifications');
-  const darkMode = document.getElementById('dark-mode');
-  
-  emailNotif.checked = data.settings.emailNotifications;
-  darkMode.checked = data.settings.darkMode;
-  
-  // Apply dark mode if enabled
-  if (data.settings.darkMode) {
-    document.body.classList.add('dark-mode');
-  } else {
-    document.body.classList.remove('dark-mode');
-  }
-  
-  // Save settings when changed
-  emailNotif.addEventListener('change', () => {
-    const data = getData();
-    data.settings.emailNotifications = emailNotif.checked;
-    saveData(data);
-  });
-  
-  darkMode.addEventListener('change', () => {
-    const data = getData();
-    data.settings.darkMode = darkMode.checked;
-    saveData(data);
-    
-    if (darkMode.checked) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
+  // Add header for Actions column
+  const actionsHeader = document.createElement('th');
+  actionsHeader.textContent = 'Actions';
+  headerRow.appendChild(actionsHeader);
+
+  availabilityTable.querySelector('thead').appendChild(headerRow);
+
+  // Create Employee Rows
+  employees.forEach(employee => {
+    const employeeRow = document.createElement('tr');
+
+    // Add employee name cell
+    const nameCell = document.createElement('th');
+    nameCell.textContent = employee.name;
+    employeeRow.appendChild(nameCell);
+
+    // Ensure employee has an availability object
+    const empAvailability = employee.availability || {};
+
+    // Add cells for each day, showing time slots
+    availabilityDays.forEach(dayKey => {
+      const availabilityCell = document.createElement('td');
+      const dayAvailability = empAvailability[dayKey] || {};
+
+      availabilityTimeSlots.forEach(slotKey => {
+        const slotSpan = document.createElement('span');
+        slotSpan.classList.add('availability-slot');
+        const isAvailable = dayAvailability[slotKey];
+        slotSpan.textContent = slotKey.charAt(0).toUpperCase() + slotKey.slice(1);
+        if (isAvailable) {
+          slotSpan.classList.add('available');
+        } else {
+          slotSpan.classList.add('unavailable');
+        }
+        availabilityCell.appendChild(slotSpan);
+      });
+
+      employeeRow.appendChild(availabilityCell);
+    });
+
+    // Add Actions Cell with Edit Button
+    const actionsCell = document.createElement('td');
+    const editButton = document.createElement('button');
+    editButton.textContent = 'Edit';
+    editButton.classList.add('edit-availability-btn');
+    editButton.dataset.employeeId = employee.id;
+
+    // Add listener to open the EMPLOYEE modal
+    editButton.addEventListener('click', (e) => {
+      const empId = parseInt(e.currentTarget.dataset.employeeId, 10);
+      if (!isNaN(empId)) {
+        openEmployeeModal('edit', empId);
+      }
+    });
+    actionsCell.appendChild(editButton);
+    employeeRow.appendChild(actionsCell);
+
+    availabilityTbody.appendChild(employeeRow);
   });
 }
 
@@ -632,6 +627,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const shiftEndTimeInput = document.getElementById('shift-end-time');
   const deleteShiftButton = document.getElementById('delete-shift-btn'); // Make sure this ID exists in HTML
   const closeShiftModalButton = shiftModal ? shiftModal.querySelector('.close') : null;
+  const emailNotif = document.getElementById('email-notifications'); // Select settings elements here
+  const darkMode = document.getElementById('dark-mode');
 
   // --- Utility Functions ---
   function formatDate(date) {
@@ -960,6 +957,54 @@ window.addEventListener('DOMContentLoaded', () => {
         closeShiftModal();
       }
     });
+  }
+
+  // --- Settings Functions (Define INSIDE DOMContentLoaded) ---
+  function loadSettings() {
+    const data = getData();
+
+    // Ensure elements exist before accessing properties/adding listeners
+    if (emailNotif) {
+        emailNotif.checked = data.settings.emailNotifications;
+        // Add listener only once
+        emailNotif.addEventListener('change', handleEmailNotifChange);
+    } else {
+        console.error("Email notification element not found.");
+    }
+
+    if (darkMode) {
+        darkMode.checked = data.settings.darkMode;
+        // Apply dark mode class initially
+        if (data.settings.darkMode) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        // Add listener only once
+        darkMode.addEventListener('change', handleDarkModeChange);
+    } else {
+         console.error("Dark mode element not found.");
+    }
+  }
+
+  // Define handler functions separately to avoid re-adding listeners in loadSettings
+  function handleEmailNotifChange() {
+      const data = getData();
+      data.settings.emailNotifications = emailNotif.checked;
+      saveData(data);
+  }
+
+  function handleDarkModeChange() {
+      const data = getData();
+      data.settings.darkMode = darkMode.checked;
+      saveData(data);
+
+      // Apply/remove class when toggled
+      if (darkMode.checked) {
+          document.body.classList.add('dark-mode');
+      } else {
+          document.body.classList.remove('dark-mode');
+      }
   }
 
   // --- Initial App Load ---
