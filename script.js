@@ -609,9 +609,36 @@ function loadAvailability() {
 window.addEventListener('DOMContentLoaded', () => {
   checkAuth();
 
-  // --- DOM Elements (Consolidated) ---
+  // Sidebar navigation logic
   const sidebarLinks = document.querySelectorAll('#sidebar li');
   const pages = document.querySelectorAll('.page');
+
+  function showPage(pageId) {
+    // Hide all pages
+    pages.forEach(page => page.classList.remove('active'));
+    // Remove active from all sidebar links
+    sidebarLinks.forEach(link => link.classList.remove('active'));
+
+    // Show the selected page
+    const targetPage = document.getElementById(`${pageId}-page`);
+    if (targetPage) targetPage.classList.add('active');
+
+    // Highlight the selected sidebar link
+    const targetLink = document.querySelector(`#sidebar li[data-page="${pageId}"]`);
+    if (targetLink) targetLink.classList.add('active');
+  }
+
+  sidebarLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      const pageId = link.getAttribute('data-page');
+      showPage(pageId);
+    });
+  });
+
+  // Show dashboard by default on load
+  showPage(document.querySelector('#sidebar li.active')?.getAttribute('data-page') || 'dashboard');
+
+  // --- DOM Elements (Consolidated) ---
   const contactForm = document.getElementById('contact-form');
   const weeklyScheduleCalendar = document.getElementById('weekly-schedule-calendar');
   const alertsContent = document.getElementById('alerts-content');
@@ -640,48 +667,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const diff = dt.getDate() - day;
     return new Date(dt.setDate(diff));
   }
-
-  // --- Page Switching Logic ---
-  function showPage(pageId) {
-    pages.forEach(page => page?.classList.remove('active'));
-    sidebarLinks.forEach(link => link?.classList.remove('active'));
-
-    const targetPage = document.getElementById(`${pageId}-page`);
-    if (targetPage) {
-        targetPage.classList.add('active');
-    } else {
-        console.error(`Page with ID ${pageId}-page not found.`);
-    }
-    const targetLink = document.querySelector(`#sidebar li[data-page="${pageId}"]`);
-     if (targetLink) {
-        targetLink.classList.add('active');
-    } else {
-         console.error(`Sidebar link with data-page="${pageId}" not found.`);
-     }
-
-     // Re-render relevant pages when shown (optional but can ensure freshness)
-     if (pageId === 'dashboard') {
-         renderDashboard();
-     } else if (pageId === 'shifts') {
-         const today = new Date(); // Or use state for current month
-         renderShiftsCalendar(today.getFullYear(), today.getMonth());
-     } else if (pageId === 'employees') {
-         loadEmployees(); // Assuming loadEmployees exists
-     } else if (pageId === 'availability') {
-         loadAvailability(); // Assuming loadAvailability exists
-     }
-  }
-
-  sidebarLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        const pageId = link.getAttribute('data-page');
-        if (pageId) {
-            showPage(pageId);
-        } else {
-            console.error('Clicked sidebar link does not have a data-page attribute.');
-        }
-    });
-  });
 
   // --- Contact Form Logic ---
   if (contactForm) {
@@ -1006,6 +991,63 @@ window.addEventListener('DOMContentLoaded', () => {
           document.body.classList.remove('dark-mode');
       }
   }
+
+  // --- Review Star Rating Logic ---
+  const stars = document.querySelectorAll('#review-page .star');
+  const reviewText = document.getElementById('review-text');
+  const submitReviewBtn = document.getElementById('submit-review');
+  let selectedRating = 0;
+
+  function updateStars(rating) {
+    stars.forEach(star => {
+      const value = parseInt(star.getAttribute('data-value'), 10);
+      if (value <= rating) {
+        star.classList.add('selected');
+      } else {
+        star.classList.remove('selected');
+      }
+    });
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.getAttribute('data-value'), 10);
+      updateStars(selectedRating);
+    });
+    star.addEventListener('mouseenter', () => {
+      updateStars(parseInt(star.getAttribute('data-value'), 10));
+    });
+    star.addEventListener('mouseleave', () => {
+      updateStars(selectedRating);
+    });
+  });
+
+  // Thank you message element
+  let reviewMsg = document.createElement('div');
+  reviewMsg.id = 'review-thankyou';
+  reviewMsg.style.display = 'none';
+  reviewMsg.style.textAlign = 'center';
+  reviewMsg.style.color = '#4caf50';
+  reviewMsg.style.marginTop = '10px';
+  reviewMsg.textContent = 'Thank you for your review!';
+  submitReviewBtn.parentNode.appendChild(reviewMsg);
+
+  // Handle review submission
+  submitReviewBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Optionally: Save the review somewhere here
+
+    // Reset stars and comment
+    selectedRating = 0;
+    updateStars(0);
+    if (reviewText) reviewText.value = '';
+
+    // Show thank you message
+    reviewMsg.style.display = 'block';
+    setTimeout(() => {
+      reviewMsg.style.display = 'none';
+    }, 2500);
+  });
 
   // --- Initial App Load ---
   function initializeApp() {

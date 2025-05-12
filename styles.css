@@ -26,12 +26,36 @@ body {
   line-height: 1.6;
   color: var(--text);
   background-color: var(--background);
+  font-size: 18px;
 }
 
+/* Headings */
 h1, h2, h3, h4 {
   color: var(--accent);
   margin-bottom: 0.8rem;
   font-weight: 500;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+/* Paragraphs */
+p {
+  font-size: 1.125rem;
+  margin-bottom: 1rem;
 }
 
 /* Header Styles */
@@ -101,7 +125,7 @@ header {
 /* Main Content Area */
 main {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1rem;
   overflow-y: auto;
 }
 
@@ -109,8 +133,8 @@ main {
 .widget {
   background: var(--white);
   border-radius: 10px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
   box-shadow: var(--shadow);
   transition: transform 0.2s ease;
 }
@@ -882,3 +906,49 @@ body.dark-mode .availability-slot.available {
 }
 
 /* Add more specific overrides as needed */
+
+/* --- Star Rating Review Section Styles --- */
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 10px 0;
+}
+
+.star {
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star:hover,
+.star:hover ~ .star,
+.star.selected,
+.star.selected ~ .star {
+  color: gold;
+}
+
+#review-text {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  min-height: 100px;
+}
+
+#submit-review {
+  margin-top: 10px;
+}
+
+/* Review Page Styles */
+#review-page .star {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+#review-page .star.selected {
+  color: gold;
+}

@@ -8,17 +8,23 @@ A simple, browser-based employee scheduling application with an intuitive interf
 
 - **Admin Authentication**: Secure admin login to protect scheduling data
 - **Dashboard Overview**: Quick view of upcoming shifts and scheduling alerts
-- **Employee Management**: Add, edit, and remove employees with their contact details
-- **Shift Scheduling**: Assign shifts to employees through an intuitive calendar interface
-- **Availability Tracking**: Record and view employee availability by day and time period
+- **Employee Management**: Add, edit, and remove employees with their contact details and availability
+- **Shift Scheduling**: Assign, edit, and delete shifts for employees through an intuitive calendar interface
+- **Availability Tracking**: Record and view employee availability by day and time period (Morning, Afternoon, Evening)
+- **Availability Editing**: Edit employee availability directly from the Availability section via the "Edit" button
 - **Responsive Design**: Works on desktop and mobile devices
 - **Local Storage**: All data is stored securely in the browser's local storage
+- **Settings Page**: Toggle dark mode and email notifications
+- **Dark Mode**: Switch between light and dark themes for better readability
+- **Review Section**: Users can rate the platform with stars and leave a comment; review resets and displays a thank you message after submission
+- **Contact Form**: Reach out to the team via the About page's contact form
+- **Sidebar Navigation**: Easily switch between Dashboard, Employees, Shifts, Availability, Settings, About, and Review sections
 
 ## Technology Stack
 
-- HTML5
-- CSS3         
-- Vanilla JavaScript
+- HTML
+- CSS         
+- JavaScript
 - LocalStorage API
 
 ## Setup Instructions
@@ -63,11 +69,13 @@ A simple, browser-based employee scheduling application with an intuitive interf
 ### Navigation
 
 Use the sidebar menu to navigate between different sections:
-- 🏠 **Dashboard**: Overview of upcoming shifts
-- 👥 **Employees**: Manage employee information
+- 🏠 **Dashboard**: Overview of upcoming shifts and alerts
+- 👥 **Employees**: Manage employee information and availability
 - 📅 **Shifts**: Schedule and assign shifts
-- ⏰ **Availability**: View and edit employee availability
-- ⚙️ **Settings**: Configure application preferences
+- ⏰ **Availability**: View and edit employee availability (edit via "Edit" button)
+- ⚙️ **Settings**: Configure application preferences, toggle dark mode and notifications
+- ℹ️ **About**: Learn about Chronexa and contact the team
+- ⭐ **Review**: Rate the platform and leave feedback
 
 ### Employee Management
 
@@ -82,13 +90,30 @@ Use the sidebar menu to navigate between different sections:
 2. Click the "+" button on any day to add a new shift
 3. Select an employee, set the start and end times
 4. Click "Save" to assign the shift
-5. Click on existing shifts to edit them
+5. Click on existing shifts to edit or delete them
 
 ### Availability Management
 
 1. Go to the "Availability" tab to view all employee availability
-2. Availability is displayed as M (Morning), A (Afternoon), and E (Evening)
-3. Edit availability through the employee edit form
+2. Availability is displayed as Morning, Afternoon, and Evening for each day
+3. Click the "Edit" button next to an employee to update their availability
+
+### Settings
+
+- Toggle **Dark Mode** for a more comfortable viewing experience
+- Enable or disable **Email Notifications** (UI only)
+
+### Review Section
+
+- Go to the "Review" tab in the sidebar
+- Click on the stars to rate the platform
+- Write your feedback in the comment box
+- Click "Submit Review" to send your review (stars and comment reset, and a thank you message is displayed)
+
+### About & Contact
+
+- Visit the "About" tab to learn more about Chronexa
+- Use the contact form to send a message to the team
 
 ## Deployment Instructions
 
@@ -125,5 +150,3 @@ All data is stored in the browser's localStorage. This means:
 - Replace the logo.png file with your own logo (recommended size: 60px height)
 - Edit the color scheme in styles.css by modifying the root variables
 - Add additional features by extending script.js
-
-
