@@ -654,6 +654,13 @@ label {
   filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
 }
 
+.login-hint {
+  color: #888;
+  font-size: 0.95em;
+  margin-top: 8px;
+  text-align: center;
+}
+
 /* Form Buttons */
 .form-buttons {
   display: flex; /* Arrange buttons side-by-side */
